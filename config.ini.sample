@@ -1,0 +1,13 @@
+
+pressreleases_feed=http://cws.huginonline.com/G/132879/pr_feed.xml
+reports_feed=http://cws.huginonline.com/G/132879/reports_feed.xml
+pressrelease_cat=4
+quarterly_cat=5
+presentation_cat=8
+annual_cat=6
+other_cat=7
+
+TRrootdir=/kunder/wp/g/gogl/TR/
+rootdir=/kunder/wp/g/gogl/wp/
+
+domain=www.goldenocean.no
