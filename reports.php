@@ -1,4 +1,4 @@
-<?
+<?php
 
 // Don't allow reentry.
 $me = fopen(__FILE__,'r');

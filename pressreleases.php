@@ -1,4 +1,4 @@
-<?
+<?php
 
 // Don't allow reentry.
 $me = fopen(__FILE__,'r');
@@ -11,8 +11,6 @@ if (!$ok) {
 
 $ini = parse_ini_file("config.ini");
 
-
-$basehref = "http://cws.huginonline.com";
 
 $rootdir = $ini['rootdir'];
 $domain = $ini['domain'];
@@ -29,7 +27,7 @@ global $wpdb;
 $URL = $ini['pressreleases_feed'];
 $TRrootdir = $ini['TRrootdir'];
 
-$xml = simplexml_load_file($URL);
+$xml = simplexml_load_file($URL . "/max/100/start/2");
 
 $logtxt = "";
 $log = TRUE;
@@ -61,7 +59,8 @@ foreach($readres as $read) {
 
 foreach ($xml->body->press_releases->press_release as $pr) {
 
-$pathtoxml = $basehref . $pr->location['href'];
+
+  $pathtoxml = $pr->location['href'];
 
   $prxml = simplexml_load_file($pathtoxml);
 
@@ -93,11 +92,15 @@ $pathtoxml = $basehref . $pr->location['href'];
 // updated code to handle multiple attachments PMB 2018-08-10
    $files = $prxml->body->press_releases->press_release->files;
 
-   foreach($files->file as $f) { 
-    $i++;
-    $link = "<p><a href='" . (string)$f->location['href'] . "' target=_blank>" . $f->file_headline . "</a></p>";
-    $prcontent .= $link;
+
+   if (!empty($files)) {
+     foreach($files->file as $f) { 
+      $i++;
+      $link = "<p><a href='" . (string)$f->location['href'] . "' target=_blank>" . $f->file_headline . "</a></p>";
+      $prcontent .= $link;
+     }
    }
+
 
 	$prdate = date("Y-m-d H:i:s", strtotime($prxml->body->press_releases->press_release->published['date']));
 	
@@ -133,10 +136,13 @@ $pathtoxml = $basehref . $pr->location['href'];
     // updated code to handle multiple attachments PMB 2018-08-10
    $files = $prxml->body->press_releases->press_release->files;
 
-   foreach($files->file as $f) { 
-    $i++;
-    $link = "<p><a href='" . (string)$f->location['href'] . "' target=_blank>" . $f->file_headline . "</a></p>";
-    $prcontent .= $link;
+
+   if (!empty($files)) {
+     foreach($files->file as $f) { 
+      $i++;
+      $link = "<p><a href='" . (string)$f->location['href'] . "' target=_blank>" . $f->file_headline . "</a></p>";
+      $prcontent .= $link;
+     }
    }
 
 
@@ -167,6 +173,7 @@ $pathtoxml = $basehref . $pr->location['href'];
   }
   # remove this message from the array that contains prevously seen messages
   unset($TRread[$TRid]);
+
 
 }
 
