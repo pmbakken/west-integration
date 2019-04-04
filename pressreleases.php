@@ -25,9 +25,17 @@ global $wpdb;
 
 
 $URL = $ini['pressreleases_feed'];
+
+// on startup manipulate this to do all import PMB 2019-04-02
+// $URLextension = "/max/100/start/401";
+$URLextension = "/max/20";
+$completeURL = $URL . $URLextension;
+
+# echo $completeURL; exit();
+
 $TRrootdir = $ini['TRrootdir'];
 
-$xml = simplexml_load_file($URL . "/max/100/start/2");
+$xml = simplexml_load_file($completeURL);
 
 $logtxt = "";
 $log = TRUE;
@@ -35,6 +43,9 @@ $log = TRUE;
 $c = 0;
 
 $lastmodonfeed = (string)$xml->head->flastmod['date'];
+
+// echo "lastmod: " . $lastmodonfeed; exit();
+
 $lastmodonfile = file_get_contents($TRrootdir . 'lastmod_pressreleases.txt');
 
 if ($lastmodonfeed == $lastmodonfile) {$logtxt .= "No changes in feed" . "\n"; echo $logtxt; exit();}
@@ -82,15 +93,15 @@ foreach ($xml->body->press_releases->press_release as $pr) {
     
 #    if ($log) {$logtxt .= $r2['meta_key'] . "=" . $r2['meta_value'] . "\n";}
       if ($r2->meta_value == $TRmod) {
-	if ($log) {$logtxt .= "no changes!" . "\n";}
+      	if ($log) {$logtxt .= "no changes!" . "\n";}
       }
       else {
-	if ($log) {$logtxt .= "release with id $post_id changed. Doing update!" . "\n";}
-	$prname = $prxml->body->press_releases->press_release->headline;
-	$prcontent = "<!--more-->" . $prxml->body->press_releases->press_release->main;
+      	if ($log) {$logtxt .= "release with id $post_id changed. Doing update!" . "\n";}
+	      $prname = $prxml->body->press_releases->press_release->headline;
+      	$prcontent = "<!--more-->" . $prxml->body->press_releases->press_release->main;
 
-// updated code to handle multiple attachments PMB 2018-08-10
-   $files = $prxml->body->press_releases->press_release->files;
+        // updated code to handle multiple attachments PMB 2018-08-10
+        $files = $prxml->body->press_releases->press_release->files;
 
 
    if (!empty($files)) {
@@ -122,8 +133,8 @@ foreach ($xml->body->press_releases->press_release as $pr) {
 		      );  
 	
 # UPDATING WP BACKEND
-      wp_update_post( $post, 0);
-      update_post_meta($id, 'TRmod', $TRmod, true);
+        wp_update_post( $post, 0);
+        update_post_meta($id, 'TRmod', $TRmod, true);
       }
     }
   }
@@ -179,10 +190,10 @@ foreach ($xml->body->press_releases->press_release as $pr) {
 
 
 #remove all messages previously read that are no longer in the feed
-foreach ($TRread as $notinfeed) {
-  if ($log) {$logtxt .= "deleted press release with post_id $notinfeed" . "\n";}
-  wp_delete_post($notinfeed, true);
-}
+#foreach ($TRread as $notinfeed) {
+#  if ($log) {$logtxt .= "deleted press release with post_id $notinfeed" . "\n";}
+#  wp_delete_post($notinfeed, true);
+#}
 
 // enable varnish plugin PMB 2018-08-10
 chdir($rootdir);
@@ -190,6 +201,8 @@ system('wp plugin activate wordpress-varnish', $retval);
 
 // purge in the end
 system('curl -X BAN --header "Host: ' . $domain . '" "http://127.0.0.1/(.*)"');
+
+echo $logtxt;
 
 
 ?>

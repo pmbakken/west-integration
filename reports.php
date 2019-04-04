@@ -16,23 +16,25 @@ require_once("$rootdir/wp-load.php");
 require_once("$rootdir/wp-admin/includes/taxonomy.php");
 require_once("$rootdir/wp-admin/includes/post.php");
 
-$URL = $ini['reports_feed'];
 $TRrootdir = $ini['TRrootdir'];
 
-$xml = simplexml_load_file($URL);
+$URL = $ini['reports_feed'];
+
+// on startup manipulate this to do all import PMB 2019-04-02
+// $URLextension = "/max/100/start/200";
+$URLextension = "/max/20";
+$completeURL = $URL . $URLextension;
+
+$xml = simplexml_load_file($completeURL);
 
 # mapping: report type in feed => post category in wp
 $reporttypes = array(
-		     "1st Quarter" => $ini['quarterly_cat'], 
-		     "2nd Quarter" => $ini['quarterly_cat'],
-		     "3rd Quarter" => $ini['quarterly_cat'],
-		     "4th Quarter" => $ini['quarterly_cat'],
-		     "Presentation of company" => $ini['presentation_cat'],
-		     "Presentation of 1st Quarter" => $ini['presentation_cat'],
-		     "Presentation of 2nd Quarter" => $ini['presentation_cat'],
-		     "Presentation of 3rd Quarter" => $ini['presentation_cat'],
-		     "Presentation of 4th Quarter" => $ini['presentation_cat'],
+		     "Interim report" => $ini['quarterly_cat'], 
 		     "Annual Report" => $ini['annual_cat'],
+		     "Presentation of company" => $ini['presentation_cat'],
+		     "Presentation of Interim report" => $ini['presentation_cat'],
+		     "Presentation of Annual report" => $ini['presentation_cat'],
+		     "Presentation of company" => $ini['presentation_cat'],
 		     "Presentation" => $ini['presentation_cat'],
 		     "Other" => $ini['other_cat']
 		     );
@@ -46,6 +48,7 @@ $lastmodonfeed = (string)$xml->head->flastmod['date'];
 echo "Last feed mod:" . $lastmodonfeed . "\n";
 $lastmodonfile = file_get_contents($TRrootdir . 'lastmod_reports.txt');
 echo "Last file mod:" . $lastmodonfile . "\n";
+
 if ($lastmodonfeed == $lastmodonfile) {$logtxt .= "No changes in feed" . "\n"; echo $logtxt; exit();}
 
 file_put_contents($TRrootdir . 'lastmod_reports.txt', $lastmodonfeed);
@@ -53,12 +56,12 @@ file_put_contents($TRrootdir . 'lastmod_reports.txt', $lastmodonfeed);
 
 # fill up an array of all previously read messages
 # will be used at the end to delete all messages that are removed from the feed
-$TRread = array();
-$query_get_read = "select * from wp_postmeta where meta_key = 'TRreportID'";
-$readres = $wpdb->get_results($query_get_read);
-foreach($readres as $read) {
-  $TRread[$read->meta_value] = $read->post_id;
-}
+# $TRread = array();
+# $query_get_read = "select * from wp_postmeta where meta_key = 'TRreportID'";
+# $readres = $wpdb->get_results($query_get_read);
+# foreach($readres as $read) {
+#   $TRread[$read->meta_value] = $read->post_id;
+#}
 
 
 
@@ -119,10 +122,10 @@ foreach ($xml->body->reports->report as $rep) {
 }
 
 #remove all messages previously read that are no longer in the feed
-foreach ($TRread as $notinfeed) {
-  if ($log) {$logtxt .= "deleted report with post_id $notinfeed" . "\n";}
-  wp_delete_post($notinfeed, true);
-}
+#foreach ($TRread as $notinfeed) {
+#  if ($log) {$logtxt .= "deleted report with post_id $notinfeed" . "\n";}
+#  wp_delete_post($notinfeed, true);
+#}
 
 
 echo $logtxt;
