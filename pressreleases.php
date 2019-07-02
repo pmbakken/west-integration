@@ -27,7 +27,7 @@ global $wpdb;
 $URL = $ini['pressreleases_feed'];
 
 // on startup manipulate this to do all import PMB 2019-04-02
-// $URLextension = "/max/100/start/401";
+// $URLextension = "/max/100/start/400";
 $URLextension = "/max/20";
 $completeURL = $URL . $URLextension;
 
