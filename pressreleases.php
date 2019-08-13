@@ -100,22 +100,11 @@ foreach ($xml->body->press_releases->press_release as $pr) {
 	      $prname = $prxml->body->press_releases->press_release->headline;
       	$prcontent = "<!--more-->" . $prxml->body->press_releases->press_release->main;
 
-        // updated code to handle multiple attachments PMB 2018-08-10
-        $files = $prxml->body->press_releases->press_release->files;
 
 
-   if (!empty($files)) {
-     foreach($files->file as $f) { 
-      $i++;
-      $link = "<p><a href='" . (string)$f->location['href'] . "' target=_blank>" . $f->file_headline . "</a></p>";
-      $prcontent .= $link;
-     }
-   }
-
-
-	$prdate = date("Y-m-d H:i:s", strtotime($prxml->body->press_releases->press_release->published['date']));
+      	$prdate = date("Y-m-d H:i:s", strtotime($prxml->body->press_releases->press_release->published['date']));
 	
-	$post = array(
+      	$post = array(
 		      'ID' => $post_id,
 		      'comment_status' => 'closed',
 		      'ping_status' =>  'closed',
@@ -143,18 +132,6 @@ foreach ($xml->body->press_releases->press_release as $pr) {
     if($log) {$logtxt .= "no report found with ID = $TRid. Going for insert." . "\n";}
     $prname = $prxml->body->press_releases->press_release->headline;
     $prcontent = "<!--more-->" . $prxml->body->press_releases->press_release->main;
-
-    // updated code to handle multiple attachments PMB 2018-08-10
-   $files = $prxml->body->press_releases->press_release->files;
-
-
-   if (!empty($files)) {
-     foreach($files->file as $f) { 
-      $i++;
-      $link = "<p><a href='" . (string)$f->location['href'] . "' target=_blank>" . $f->file_headline . "</a></p>";
-      $prcontent .= $link;
-     }
-   }
 
 
     $prdate = date("Y-m-d", strtotime($prxml->body->press_releases->press_release->published['date']));
