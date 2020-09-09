@@ -51,6 +51,16 @@ $lastmodonfile = file_get_contents($TRrootdir . 'lastmod_pressreleases.txt');
 if ($lastmodonfeed == $lastmodonfile) {$logtxt .= "No changes in feed" . "\n"; echo $logtxt; exit();}
 
 
+# check if title is correct to make sure this is the correct feed. PMB 2020-09-09
+if (empty($ini['title_value'])) { # we do not test for title equality if empty in config, for backward compability PMB 2020-09-09
+        echo "Warning. title is not specified in the config " . "\n";
+}
+else {
+    # if the title in config does not match the title in xml, we exit PMB 2020-09-09
+    if ($ini['title_value'] != $xml->head->title) { echo "The title does not match. We exit!" . "\n"; exit();}
+}
+
+
 // disable varnish plugin PMB 2018-08-10
 chdir($rootdir);
 system('wp plugin deactivate wordpress-varnish', $retval);
