@@ -6,6 +6,7 @@ quarterly_cat=5
 presentation_cat=8
 annual_cat=6
 other_cat=7
+title_value=
 
 TRrootdir=/kunder/wp/g/gogl/TR/
 rootdir=/kunder/wp/g/gogl/wp/
