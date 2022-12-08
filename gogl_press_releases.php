@@ -49,21 +49,13 @@ $c = 0;
 
 function gogl_set_acf_data($post_id, $title, $date, $content) {
 
-
-	$report_words = array(
-		"results",
-		"quarter",		
-		"q1",
-		"q2",
-		"q3",
-		"q4"
-	)
-
-
-    $vals = array('field_602bb197b08d8' => $title);
+    $vals = array(
+    	'field_602bb197b08d8' => $title, 
+    	'field_602bb1b7f319d' => $date);
     $ret = update_field('field_602bafba30e5d', $vals, $post_id);
 
-    $vals = array('field_602baf37d5494' => $title);
+    $vals = array(
+    	'field_602baf37d5494' => $title);
     $ret = update_field('field_602bafe530e5e', $vals, $post_id);
 
 	$fc_key = 'field_5d24066a6e08e';
@@ -182,7 +174,6 @@ foreach ($xml->body->press_releases->press_release as $pr) {
     }
   }
   else {
-#    if ($c == 2) {exit();}
     echo "no report found with ID = $TRid. Going for insert." . "\n";
     $prname = (string)$prxml->body->press_releases->press_release->headline;
     $prcontent = (string)$prxml->body->press_releases->press_release->main;
@@ -206,7 +197,7 @@ foreach ($xml->body->press_releases->press_release as $pr) {
 		  'post_type' => 'press-release'
 		  );  
 
-# INSERTING INTO WP BACKEND
+		# INSERTING INTO WP BACKEND
     if (!$debug) {
 	    $post_id = wp_insert_post( $post, 0);
     	add_post_meta($post_id, 'TRid', $TRid, true);
@@ -214,23 +205,10 @@ foreach ($xml->body->press_releases->press_release as $pr) {
     }
 
 
-   	set_acf_data($post_id, $prname, $prdate, $prcontent);
+   	gogl_set_acf_data($post_id, $prname, $prdate, $prcontent);
 
 
-/*
-      	$vals = array('field_602bb197b08d8' => 'TEST3');
-      	$ret = update_field('field_602bafba30e5d', $vals, $post_id);
-
-      	$vals = array('field_602baf37d5494' => 'test3');
-      	$ret = update_field('field_602bafe530e5e', $vals, $post_id);
-
-		$fc_key = 'field_5d24066a6e08e';
-		$fc_rows = [];
-		$myarr = array( 'acf_fc_layout'=>'paragraph', 'text'=>'Hello world3');
-		array_push($fc_rows, $myarr);
-		update_field($fc_key, $fc_rows, $post_id);
-*/		
-	    print_r(get_field_objects($post_id));
+	  print_r(get_field_objects($post_id));
 
     # Here we have the ID and can add content to the ACF fields PMB 2022-12-07
     # section_header_with_image_below -> title AND date
