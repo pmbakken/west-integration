@@ -38,8 +38,6 @@ $reporttypes = array(
 		     "Other" => $ini['other_cat']
 		     );
 
-$logtxt = "";
-$log = TRUE;
 
 $c = 0;
 
@@ -48,7 +46,7 @@ $lastmodonfeed = (string)$xml->head->flastmod['date'];
 $lastmodonfile = file_get_contents($TRrootdir . 'lastmod_reports.txt');
 // echo "Last file mod:" . $lastmodonfile . "\n";
 
-if ($lastmodonfeed == $lastmodonfile) {$logtxt .= "No changes in feed" . "\n"; echo $logtxt; exit();}
+if ($lastmodonfeed == $lastmodonfile) {echo "No changes in feed" . "\n"; exit();}
 
 # check if title is correct to make sure this is the correct feed. PMB 2020-09-09
 if (empty($ini['title_value'])) { # we do not test for title equality if empty in config, for backward compability PMB 2020-09-09
@@ -73,7 +71,7 @@ foreach ($xml->body->reports->report as $rep) {
   $res = $wpdb->get_results($q);
 
   if (sizeof($res) > 0) {
-     $post_id = $res[0]->post_id;
+    $post_id = $res[0]->post_id;
     $repname = (string)$rep->files->file->file_headline;
 
     $post = array(
@@ -82,10 +80,11 @@ foreach ($xml->body->reports->report as $rep) {
 		  );
     wp_update_post($post);
     
-    if ($log) {$logtxt .= "Found report with ID $TRid\n";}
+    echo "Found report with ID $TRid\n";
   }
   else {
-    if($log) {$logtxt .= "no release found with ID = $TRid. Going for insert." . "\n";}
+    echo "no release found with ID = $TRid. Going for insert." . "\n";
+
     $repname = (string)$rep->files->file->file_headline;
     $repcontent = "<a class='link' href='" . $rep->files->file->location['href'] . "' target=_blank>" . $repname . "</a>";
     $repdate = date("Y-m-d", strtotime($rep->published['date']));
