@@ -14,8 +14,8 @@ if (!$ok) {
 
 ################### Initialization #################
 
+# FIXME check this debug thing PMB 2022-12-09
 $debug = false;
-
 
 $ini = parse_ini_file("test_config.ini");
 
@@ -168,7 +168,7 @@ foreach ($xml->body->press_releases->press_release as $pr) {
 
       	gogl_set_acf_data($post_id, $prname, $prdate, $prcontent);
 		
-	    print_r(get_field_objects($post_id));
+#	    print_r(get_field_objects($post_id));
 
       }
     }
@@ -208,7 +208,7 @@ foreach ($xml->body->press_releases->press_release as $pr) {
    	gogl_set_acf_data($post_id, $prname, $prdate, $prcontent);
 
 
-	  print_r(get_field_objects($post_id));
+#	  print_r(get_field_objects($post_id));
 
     # Here we have the ID and can add content to the ACF fields PMB 2022-12-07
     # section_header_with_image_below -> title AND date
@@ -220,18 +220,20 @@ foreach ($xml->body->press_releases->press_release as $pr) {
   # remove this message from the array that contains prevously seen messages
   unset($TRread[$TRid]);
 
-  exit();
+#  exit();
 
 }
 
 
 // enable varnish plugin PMB 2018-08-10
+// FIXME commented out for now PMB 2022-12-09
+/*
 if (!$debug) {
 	chdir($rootdir);
 	system('wp plugin activate wordpress-varnish', $retval);	
 	system('curl -X BAN --header "Host: ' . $domain . '" "http://127.0.0.1/(.*)"');
 }
-
+*/
 
 
 
