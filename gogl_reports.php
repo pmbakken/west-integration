@@ -40,15 +40,17 @@ $reporttypes = array(
 		     );
 
 
-$c = 0;
-
 $lastmodonfeed = (string)$xml->head->flastmod['date'];
-// echo "Last feed mod:" . $lastmodonfeed . "\n";
 $lastmodonfile = file_get_contents($TRrootdir . 'lastmod_reports.txt');
-// echo "Last file mod:" . $lastmodonfile . "\n";
 
-# FIXME comment back in so we only do work when feed has changed PMB 2022-12-09
-# if ($lastmodonfeed == $lastmodonfile) {echo "No changes in feed" . "\n"; exit();}
+echo "Last feed mod:" . $lastmodonfeed . "\n";
+echo "Last file mod:" . $lastmodonfile . "\n";
+
+# only do work when feed has changed PMB 2022-12-09
+if ($lastmodonfeed == $lastmodonfile) {
+  echo "No changes in feed" . "\n";
+  exit();
+}
 
 # check if title is correct to make sure this is the correct feed. PMB 2020-09-09
 if (empty($ini['title_value'])) { # we do not test for title equality if empty in config, for backward compability PMB 2020-09-09
@@ -60,26 +62,30 @@ else {
 }
 
 
-
+# write back to file the last modified date of the feed PMB 2022-12-12
 file_put_contents($TRrootdir . 'lastmod_reports.txt', $lastmodonfeed);
 
 
-
+# Loop all reports
 foreach ($xml->body->reports->report as $rep) {
   $TRid = (string)$rep['id'];
 
-// do not handle if the releases are older than the date where we started import
+  // do not handle if the releases are older than the date where we started import
   if ($TRid < 1112289) {
   	echo "release with id " . $TRid . " is before cut off date and is manually handled.\n";
   	continue;
   }
 
   # check for type so we can work with correct post type
-  $type = (string)$rep->files->file['type'];
-  echo "found " . $type . " with id: " . $TRid . " to work with\n";
+  # in the feed all entries are reports, but in wordpress there are
+  # separate post types for reports and presentations
 
-  $post_type = "";
+  $post_type = ""; // this we will try to populate
+
+  # type is a string in the feed. we have an associative array to map to post type
+  $type = (string)$rep->files->file['type']; 
   $repcat = $reporttypes[$type];
+
   # check if this is report, presentation or other
   if ($repcat == $ini['quarterly_cat'] || $repcat == $ini['annual_cat']) {
   	$post_type = "reports";
@@ -94,16 +100,21 @@ foreach ($xml->body->reports->report as $rep) {
   }
 
 
+  # we find some data fields that we will use later with an insert or an update
+  $repname = (string)$rep->files->file->file_headline;
+  $repurl = (string)$rep->files->file->location['href'];
+  $repdate = date("Y-m-d", strtotime($rep->published['date']));
+
+
+  # next we check if we already have the report/presentation imported
+  # we use post meta TRreportID to keep track
   $q = "select p.post_status, m.post_id, m.meta_key, m.meta_value, m.meta_id from " . $wpdb->prefix . "postmeta m join " . $wpdb->prefix . "posts p on m.post_id = p.id where m.meta_value = $TRid AND m.meta_key = 'TRreportID'";
 
   $res = $wpdb->get_results($q);
 
+  # if we find more than 0, then we have imported before, and do an update
   if (sizeof($res) > 0) {
     $post_id = $res[0]->post_id;
-
-    $repname = (string)$rep->files->file->file_headline;
-    $repurl = (string)$rep->files->file->location['href'];
-    $repdate = date("Y-m-d", strtotime($rep->published['date']));
 
     $post = array(
 		 'ID' => $post_id,
@@ -111,9 +122,7 @@ foreach ($xml->body->reports->report as $rep) {
 		  );
     wp_update_post($post);
 
-	print_r(get_field_objects($post_id));
     echo "Found one with type:" . $post_type . " with ID $TRid. doing update\n";
-
 
     update_field('field_6040c22e47cb9', $repname, $post_id);
     update_field('field_6040c22e47cfe', $repdate, $post_id);
@@ -123,24 +132,14 @@ foreach ($xml->body->reports->report as $rep) {
   else {
     echo "None found with ID = " . $TRid . ". Type: " . $post_type . ". Going for insert." . "\n";
 
-    $repname = (string)$rep->files->file->file_headline;
-    $repurl = (string)$rep->files->file->location['href'];
-    $repdate = date("Y-m-d", strtotime($rep->published['date']));
-
-#    $type = (string)$rep->files->file['type'];
-#    $repcat = $reporttypes[$type];
-
     $post = array(
 		  'comment_status' => 'closed',
 		  'ping_status' =>  'closed',
 		  'post_author' => 0,
-		  'post_category' => Array($repcat),
-#		  'post_content' => $repcontent, 
 		  'post_date' => $repdate,
 		  'post_date_gmt' => $repdate,
 		  'post_excerpt' => '',
 		  'post_name' => $repname, 
-		  //  'post_password' => [ ? ] //password for post?
 		  'post_status' => 'publish',// [ 'draft' | 'publish' | 'pending'| 'future' | 'private' ] //Set the status of the new post. 
 		  'post_title' => $repname,
 		  'post_type' => $post_type
@@ -154,14 +153,13 @@ foreach ($xml->body->reports->report as $rep) {
     update_field('field_6040c22e47cfe', $repdate, $post_id);
     update_field('field_6040c22e47d3a', $repurl, $post_id);
 
+    # set the correct category PMB 2022-12-12
+    # but this is only relevant for reports
+    if ($post_type == 'reports' && ($repcat == $ini['quarterly_cat'] || $repcat == $ini['annual_cat'])) {
+      wp_set_object_terms($post_id, (int)$repcat, 'report_category');
+    }
 
-#	print_r(get_field_objects($post_id));
-
-    $c++;
   }
-
-
-  
 
 
 }
